@@ -43,9 +43,11 @@ def clean_date():
     
     # Ordenar el DataFrame resultante por línea, variante, y hora
     df_paradas_lineas_direc = df_paradas_lineas_direc.sort_values(by=['DESC_LINEA', 'frecuencia', 'hora'])
-
+    print(df_paradas_lineas_direc)
     return {
         'viajes': df_viajes, 'paradas': df_paradas, 
         'orden_paradas': df_orden_paradas, 'origen_destino_linea': df_origen_destino_linea,
         'paradas_lineas_direc': df_paradas_lineas_direc
     }
+
+clean_date()
