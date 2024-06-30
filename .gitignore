@@ -20,6 +20,6 @@
 ./__pycache__
 
 # csv de viajes por ser demasiado pesado 
-./ROkzNjh5SCO63dSgeX8tcw.csv
+./csv/ROkzNjh5SCO63dSgeX8tcw.csv
 
 # End of https://www.toptal.com/developers/gitignore/api/linux

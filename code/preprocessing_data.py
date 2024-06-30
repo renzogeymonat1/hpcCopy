@@ -40,14 +40,15 @@ def clean_date():
         left_on=['COD_UBIC_P', 'COD_VARIAN'],
         right_on=['cod_ubic_parada', 'cod_variante']
     )
-    
+
     # Ordenar el DataFrame resultante por línea, variante, y hora
     df_paradas_lineas_direc = df_paradas_lineas_direc.sort_values(by=['DESC_LINEA', 'frecuencia', 'hora'])
-    print(df_paradas_lineas_direc)
     return {
         'viajes': df_viajes, 'paradas': df_paradas, 
-        'orden_paradas': df_orden_paradas, 'origen_destino_linea': df_origen_destino_linea,
-        'paradas_lineas_direc': df_paradas_lineas_direc
+        #'orden_paradas': df_orden_paradas, 'origen_destino_linea': df_origen_destino_linea,
+        'paradas_lineas_direc': df_paradas_lineas_direc[
+            ['COD_UBIC_P', 'DESC_LINEA', 'COD_VARIAN', 'X', 'Y', 'DESC_VARIA']
+        ]
     }
 
 clean_date()
