@@ -1,5 +1,6 @@
 import pandas as pd
 import preprocessing_data as pre_data
+from datetime import datetime, timedelta
 
 def heuristica1():
     #Obtener los datos 
@@ -7,7 +8,7 @@ def heuristica1():
     df_viajes = data['viajes']
     print(df_viajes)
     df_paradas_lineas_direc = data['paradas_lineas_direc']
-
+    print(df_paradas_lineas_direc)
 
     # Lista de paradas por cordenadas para medir distancias
     df_paradas_lineas_direc = data['paradas_lineas_direc']
@@ -52,7 +53,34 @@ def distanncia_paradas(cod_parada: int, df_x: pd.DataFrame, df_y: pd.DataFrame):
 
     return pd.merge(df_paradas_x, df_paradas_y, on=['COD_UBIC_P'])
 
+#funcion para quedarnos con lo necesario cada vez que se toma una row de viajes. Cod parada, línea y variante en la que la persona asciende
+def iter_de_calculo(cod_parada: int, desc_linea: str, cod_var: str, fecha_iter: datetime):
+    #1-descarto viajes que no me sirven (descarto franjas)
+    data = pre_data.clean_date()
+    data_viajes_iter = data['viajes']
 
+    # Convertir 'fecha_evento' a formato datetime
+    data_viajes_iter['fecha_evento'] = pd.to_datetime(data_viajes_iter['fecha_evento'])
+
+    # Definir el límite de tiempo (1 hora 40 minutos)
+    limite_tiempo = timedelta(hours=1, minutes=40)
+
+    # Filtrar los registros
+    filtro = data_viajes_iter['fecha_evento'].apply(lambda x: x <= fecha_iter + limite_tiempo)
+    data_viajes_iter = data_viajes_iter[filtro]
+
+    #2-busco paradas siguientes a la que sube
+    # Filtrar los registros que coinciden con desc_linea y cod_var y están después de cod_parada
+    data_paradas_lineas_direc_iter = data_paradas_lineas_direc_iter[
+        (data_paradas_lineas_direc_iter['COD_UBIC_P'] >= cod_parada) &  # Incluye cod_parada y los siguientes
+        (data_paradas_lineas_direc_iter['DESC_LINEA'] == desc_linea) &
+        (data_paradas_lineas_direc_iter['DESC_VARIA'] == cod_var)
+    ]
+
+    data_paradas_lineas_direc_iter = data_paradas_lineas_direc_iter.drop_duplicates()
+
+    #3-para cada una de esas paradas, busco las mas cercanas y lineas que tengan como retorno una parada cercana a la que sube y calculo volumen. 
+    return data_viajes_iter
 heuristica1()
 
     
