@@ -41,7 +41,7 @@ def heuristica1():
     #             df_cant_viajes_hora, df_paradas_lineas_direc
     #         )
     iter_de_calculo(
-                2954, "546", 217,
+                4211, '546', 217,
                 8, df_paradas_x_sorted, df_paradas_y_sorted, 
                 df_cant_viajes_hora, df_paradas_lineas_direc
             )
@@ -80,22 +80,27 @@ def iter_de_calculo(
 
     #2-busco paradas siguientes a la que sube
     # Filtrar los registros que coinciden con desc_linea y cod_var y están después de cod_parada
-    # Encuentra el índice de la primera fila que cumple con las tres condiciones
-    index_initial = data_paradas_lineas_direc[
-        (data_paradas_lineas_direc['COD_UBIC_P'] == cod_parada) &  
-        (data_paradas_lineas_direc['DESC_LINEA'] == desc_linea) &
+    
+    # Aplica las dos condiciones a las filas posteriores
+    data_paradas_lineas_direc_iter = data_paradas_lineas_direc[
         (data_paradas_lineas_direc['COD_VARIAN'] == cod_var)
+    ]
+
+    # Resetea los índices y elimina la columna de índices original
+    data_paradas_lineas_direc_iter = data_paradas_lineas_direc_iter.reset_index(drop=True)
+
+    # print(data_paradas_lineas_direc_iter)
+
+    # Encuentra el índice de la primera fila que cumple con las tres condiciones
+    index_initial = data_paradas_lineas_direc_iter[
+        (data_paradas_lineas_direc_iter['COD_UBIC_P'] == cod_parada)
     ].index[0]
 
+    print(index_initial)
     # Filtra el DataFrame desde la fila que cumple con las tres condiciones
-    filtered_data = data_paradas_lineas_direc.iloc[index_initial + 1:]
+    filtered_data = data_paradas_lineas_direc_iter.iloc[index_initial + 1:]
 
-    # Aplica las dos condiciones a las filas posteriores
-    data_paradas_lineas_direc_iter = filtered_data[
-        (filtered_data['DESC_LINEA'] == desc_linea) &
-        (filtered_data['COD_VARIAN'] == cod_var)
-    ]
-    print(data_paradas_lineas_direc_iter)
+    print(filtered_data)
 
     # print(data_paradas_lineas_direc_iter)
     data_paradas_lineas_direc_iter = data_paradas_lineas_direc_iter.drop_duplicates()
