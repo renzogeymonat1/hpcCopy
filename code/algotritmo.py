@@ -41,7 +41,7 @@ def heuristica1():
     #             df_cant_viajes_hora, data_paradas_lineas_direc
     #         )
     iter_de_calculo(
-                4211, '546', 217,
+                3692, '546', 217,
                 8, df_paradas_x_sorted, df_paradas_y_sorted, 
                 df_cant_viajes_hora, data_paradas_lineas_direc
             )
@@ -87,8 +87,9 @@ def iter_de_calculo(
     data_paradas_lineas_direc_iter = data_paradas_lineas_direc_iter.iloc[index_initial + 1:]
 
     #Sentido/direccion del viaje antes de quitar columnas
-    sentidoViaje = data_paradas_lineas_direc_iter.iloc[0]['DESC_VARIA']
-    print(sentidoViaje)
+    if not data_paradas_lineas_direc_iter.empty:
+        sentidoViaje = data_paradas_lineas_direc_iter.iloc[0]['DESC_VARIA']
+        print(sentidoViaje)
 
     print(data_paradas_lineas_direc_iter)
     # print(data_paradas_lineas_direc_iter)
