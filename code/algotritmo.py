@@ -1,6 +1,7 @@
 import pandas as pd
 import preprocessing_data as pre_data
 from datetime import datetime, timedelta
+import numpy as np
 
 def heuristica1():
     #Obtener los datos 
@@ -31,20 +32,90 @@ def heuristica1():
     # Crear franjas horarias de una hora
     horas = [f"{str(h).zfill(2)}:00 - {str(h+1).zfill(2)}:00" for h in range(24)]
 
-    # for cod_ubic_p in df_paradas['COD_UBIC_P']:
-    #     df_lineas_para_x_parada = df_paradas[df_paradas['COD_UBIC_P'] == cod_ubic_p]
-    #     for _, linea in df_lineas_para_x_parada.iterrows():
-    #         for hora in horas:
-    #         iter_de_calculo(
-    #             cod_ubic_p, linea['DESC_LINEA'], linea['COD_VARIAN'],
-    #             hora, df_paradas_x_sorted, df_paradas_y_sorted, 
+    # # Seleccionar solo la columna COD_VARIAN
+    # data_cod_varian = data_paradas_lineas_direc[['COD_VARIAN']]
+    
+    # #Eliminar duplicados
+    # data_cod_varian =  data_cod_varian[['COD_VARIAN']].drop_duplicates()
+    # print(data_cod_varian)
+
+    # # Printeo de prueba para ver las paradas del recorrido.
+    # data_paradas_variante = data_paradas_lineas_direc[data_paradas_lineas_direc['COD_VARIAN'] == 217]
+    # data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']]
+    # data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']].drop_duplicates()
+    # # print(data_paradas_variante)
+    # # Obtener los valores de la columna 'COD_UBIC_P'
+    # cod_ubic_p_values = data_paradas_variante['COD_UBIC_P'].values
+
+    # # Crear una matriz nxn, donde n es el número de filas en data_paradas_variante
+    # n = len(cod_ubic_p_values)
+    # matriz = np.zeros((n, n + 1))
+
+    # # Asignar los valores de cod_ubic_p_values a la primera columna de la matriz
+    # matriz[:, 0] = cod_ubic_p_values
+
+    # # Imprimir la matriz para verificar
+    # print(matriz)
+
+    # i = 1
+    # for cod_ubic_p_acenso in data_paradas_variante['COD_UBIC_P']:
+    #     data_probabilidades_iter = iter_de_calculo(
+    #             cod_ubic_p_acenso, '546', 217,
+    #             8, df_paradas_x_sorted, df_paradas_y_sorted, 
     #             df_cant_viajes_hora, data_paradas_lineas_direc
     #         )
-    iter_de_calculo(
-                3692, '546', 217,
+    #     prob_values = data_probabilidades_iter['PROBABILIDAD'].values
+    #     prob_values = np.pad(prob_values, (n - len(prob_values), 0), 'constant')
+    #     #print(prob_values)
+    #     matriz[:, i] = prob_values
+    #     i += 1
+    # np.set_printoptions(suppress=True, precision=8)
+    # print(matriz)
+
+    # Crear un diccionario vacío
+    dict = {}
+
+    # for hora in horas:
+    #     for cod_variante in data_cod_varian['COD_VARIAN']:
+    data_paradas_variante = data_paradas_lineas_direc[data_paradas_lineas_direc['COD_VARIAN'] == 217]
+    data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']]
+    data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']].drop_duplicates()
+            
+    # Obtener los valores de la columna 'COD_UBIC_P'
+    cod_ubic_p_values = data_paradas_variante['COD_UBIC_P'].values
+
+    # Crear una matriz nxn, donde n es el número de filas en data_paradas_variante
+    n = len(cod_ubic_p_values)
+    matriz = np.zeros((n, n + 1))
+
+    # Asignar los valores de cod_ubic_p_values a la primera columna de la matriz
+    matriz[:, 0] = cod_ubic_p_values
+
+    # Imprimir la matriz para verificar
+    print(matriz)
+
+    i = 1
+    for cod_ubic_p_acenso in data_paradas_variante['COD_UBIC_P']:
+        data_probabilidades_iter = iter_de_calculo(
+                cod_ubic_p_acenso, '546', 217,
                 8, df_paradas_x_sorted, df_paradas_y_sorted, 
                 df_cant_viajes_hora, data_paradas_lineas_direc
             )
+        prob_values = data_probabilidades_iter['PROBABILIDAD'].values
+        prob_values = np.pad(prob_values, (n - len(prob_values), 0), 'constant')
+        #print(prob_values)
+        matriz[:, i] = prob_values
+        i += 1
+    np.set_printoptions(suppress=True, precision=8)
+    print(matriz)
+    key = (217, 8)
+    dict[key] = matriz
+
+    # iter_de_calculo(
+    #             3692, '546', 217,
+    #             8, df_paradas_x_sorted, df_paradas_y_sorted, 
+    #             df_cant_viajes_hora, data_paradas_lineas_direc
+    #         )
 
 #     df_cant_viajes_hora
 #           COD_UBIC_P DESC_LINEA  COD_VARIAN  hora  cant_viajes
@@ -77,10 +148,10 @@ def iter_de_calculo(
 
     # print(data_paradas_lineas_direc_iter)
 
-    # Encuentra el índice de la primera fila que cumple con las tres condiciones
+    # Encuentra el índice de la primera fila que cumple con las dos condiciones
     index_initial = data_paradas_lineas_direc_iter[
-        (data_paradas_lineas_direc_iter['COD_UBIC_P'] == cod_parada)
-    ].index[0]
+            (data_paradas_lineas_direc_iter['COD_UBIC_P'] == cod_parada)
+        ].index[0]
 
     print(index_initial)
     # Filtra el DataFrame desde la fila que cumple con las dos condiciones (me quedo con las siguientes paradas a la que sube por eso el +1)
@@ -176,6 +247,7 @@ def iter_de_calculo(
     #Calculo de probabilidad para todas las paradas siguientes.
     data_paradas_lineas_direc_iter['PROBABILIDAD'] = (data_paradas_lineas_direc_iter['VOLUMEN'] / volumen_total) * 100
     print(data_paradas_lineas_direc_iter)
+    return data_paradas_lineas_direc_iter
 
 #calcular la distancia entre paradas
 def distanncia_paradas(cod_parada: int, df_x: pd.DataFrame, df_y: pd.DataFrame):
