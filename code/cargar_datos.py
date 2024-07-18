@@ -13,6 +13,8 @@ def get_datasets():
     df_origen_destino_linea = pd.read_csv(ORIGEN_DESTINO_LINEAS, delimiter=';')
     df_orden_paradas = pd.read_csv(ORDEN_PARADAS, delimiter=';')
 
+    df_origen_destino_linea = df_origen_destino_linea.drop_duplicates(subset=['DESC_LINEA', 'DESC_VARIA'])
+
     return { 
         'viajes': df_viajes, 'paradas': df_paradas, 
         'orden_paradas': df_orden_paradas, 'origen_destino_linea': df_origen_destino_linea
