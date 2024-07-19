@@ -8,6 +8,7 @@ import json
 paradas_cercanas = {}
 
 def heuristica1():
+    print("En ejecucion")
     #Obtener los datos 
     data = pre_data.clean_date()
     df_viajes = data['viajes']
@@ -60,7 +61,7 @@ def heuristica1():
     for franja in ['00-10','10-18','18-00']:
         for _, row in data_cod_varian.iterrows():
             print(row)
-            if k < 6:
+            if k < 1:
                 k += 1
                 data_paradas_variante = data_paradas_lineas_direc[data_paradas_lineas_direc['COD_VARIAN'] == row['COD_VARIAN']]
                 data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']]
