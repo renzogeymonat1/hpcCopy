@@ -3,7 +3,7 @@
 
 int main()
 {
-#pragma omp parallel num_threads(2)
+#pragma omp parallel num_threads(12)
     {
         // Aquí puedes ejecutar el comando para el esclavo, si lo necesitas
         std::string command = "./slave"; // Nombre del programa esclavo

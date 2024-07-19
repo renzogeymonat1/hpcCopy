@@ -12,8 +12,6 @@ def heuristica1():
     #Obtener los datos 
     data = pre_data.clean_date()
     df_viajes = data['viajes']
-    df_paradas = data['paradas']
-    data_paradas_lineas_direc = data['paradas_lineas_direc']
 
     # Lista de paradas por cordenadas para medir distancias
     data_paradas_lineas_direc = data['paradas_lineas_direc']
