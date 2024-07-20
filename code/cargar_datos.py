@@ -1,10 +1,10 @@
 import pandas as pd
 
 # ubicacion de archivos
-VIAJES = './csv/ROkzNjh5SCO63dSgeX8tcw.csv'
-PARADAS = './csv/v_uptu_paradas.csv'
-ORIGEN_DESTINO_LINEAS = './csv/v_uptu_lsv.csv'
-ORDEN_PARADAS = './csv/uptu_pasada_variante.csv'
+VIAJES = 'C:\\Users\\renzo\\Desktop\\hpc\\csv\\ROkzNjh5SCO63dSgeX8tcw2.csv'
+PARADAS = 'C:\\Users\\renzo\\Desktop\\hpc\\csv\\v_uptu_paradas.csv'
+ORIGEN_DESTINO_LINEAS = 'C:\\Users\\renzo\\Desktop\\hpc\\csv\\v_uptu_lsv.csv'
+ORDEN_PARADAS = 'C:\\Users\\renzo\\Desktop\\hpc\\csv\\uptu_pasada_variante.csv'
 
 def get_datasets():
     # Leer el archivo CSV y cargar los primeros un millón de registros

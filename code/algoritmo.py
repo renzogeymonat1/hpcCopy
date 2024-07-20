@@ -4,56 +4,64 @@ from datetime import datetime
 import time
 import numpy as np
 import json
+import sys
 
 paradas_cercanas = {}
 
-def heuristica1():
+def heuristica1(numFragmento):
+    # Leer el archivo CSV
+    
     print("En ejecucion")
+    
+    VIAJES = 'C:\\Users\\renzo\\Desktop\\hpc\\csv\\resProcessingData\\viajes.csv'
+    PARADAS_LINEAS_DIREC = 'C:\\Users\\renzo\\Desktop\\hpc\\csv\\resProcessingData\\paradas_lineas_direc.csv'
+    CANT_VIAJES_FRANJA= 'C:\\Users\\renzo\\Desktop\\hpc\\csv\\resProcessingData\\df_cant_viajes_franja.csv'
+    
     #Obtener los datos 
-    data = pre_data.clean_date()
-    df_viajes = data['viajes']
-    df_paradas = data['paradas']
-    data_paradas_lineas_direc = data['paradas_lineas_direc']
+    df_viajes = pd.read_csv(VIAJES)
+    data_paradas_lineas_direc = pd.read_csv(PARADAS_LINEAS_DIREC)
+    df_cant_viajes_franja = pd.read_csv( CANT_VIAJES_FRANJA)
 
     # Lista de paradas por cordenadas para medir distancias
-    data_paradas_lineas_direc = data['paradas_lineas_direc']
+    #data_paradas_lineas_direc = data['paradas_lineas_direc']
     df_paradas_x = data_paradas_lineas_direc[['COD_UBIC_P', 'X']].drop_duplicates()
     df_paradas_y = data_paradas_lineas_direc[['COD_UBIC_P', 'Y']].drop_duplicates()
     df_paradas_x_sorted = df_paradas_x.sort_values(by='X')
     df_paradas_y_sorted = df_paradas_y.sort_values(by='Y')
     
-    # Convertir la columna 'fecha_evento' a datetime
-    df_viajes['fecha_evento'] = pd.to_datetime(df_viajes['fecha_evento'])
+    # # Convertir la columna 'fecha_evento' a datetime
+    # df_viajes['fecha_evento'] = pd.to_datetime(df_viajes['fecha_evento'])
 
-    # Crear una función para asignar franjas horarias
-    def asignar_franja_horaria(hora):
-        if 0 <= hora < 10:
-            return '00-10'
-        elif 10 <= hora < 18:
-            return '10-18'
-        else:
-            return '18-00'
+    # # Crear una función para asignar franjas horarias
+    # def asignar_franja_horaria(hora):
+    #     if 0 <= hora < 10:
+    #         return '00-10'
+    #     elif 10 <= hora < 18:
+    #         return '10-18'
+    #     else:
+    #         return '18-00'
         
-    print("viajes cargados")
+    # print("viajes cargados")
 
-    # Extraer la hora de 'fecha_evento'
-    df_viajes['hora'] = df_viajes['fecha_evento'].dt.hour
+    # # Extraer la hora de 'fecha_evento'
+    # df_viajes['hora'] = df_viajes['fecha_evento'].dt.hour
 
-    # Asignar franjas horarias
-    df_viajes['franja_horaria'] = df_viajes['hora'].apply(asignar_franja_horaria)
+    # # Asignar franjas horarias
+    # df_viajes['franja_horaria'] = df_viajes['hora'].apply(asignar_franja_horaria)
 
-    # Agrupar por 'codigo_parada_origen', 'dsc_linea', 'sevar_codigo' y 'franja_horaria', luego sumar los pasajeros en cantidad_pasajeros
-    df_cant_viajes_franja = df_viajes.groupby(['codigo_parada_origen', 'dsc_linea', 'sevar_codigo', 'franja_horaria'])['cantidad_pasajeros'].sum().reset_index()
+    # # Agrupar por 'codigo_parada_origen', 'dsc_linea', 'sevar_codigo' y 'franja_horaria', luego sumar los pasajeros en cantidad_pasajeros
+    # df_cant_viajes_franja = df_viajes.groupby(['codigo_parada_origen', 'dsc_linea', 'sevar_codigo', 'franja_horaria'])['cantidad_pasajeros'].sum().reset_index()
     
-    # Renombrar las columnas para que coincidan con el formato deseado
-    df_cant_viajes_franja.columns = ['COD_UBIC_P', 'DESC_LINEA', 'COD_VARIAN', 'franja_horaria', 'cant_viajes']
-    print("viajes procesados")
+    # # Renombrar las columnas para que coincidan con el formato deseado
+    # df_cant_viajes_franja.columns = ['COD_UBIC_P', 'DESC_LINEA', 'COD_VARIAN', 'franja_horaria', 'cant_viajes']
+    # print("viajes procesados")
 
     # Seleccionar solo la columna COD_VARIAN
-    data_cod_varian = data_paradas_lineas_direc[['COD_VARIAN', 'DESC_LINEA']]
+    ruta = f'C:\\Users\\renzo\\Desktop\\hpc\\csv\\resProcessingData\\fragmentosCodVar\\fragmento_{numFragmento}.csv'
+    data_cod_varian = pd.read_csv(ruta)
     
     #Eliminar duplicados
-    data_cod_varian =  data_cod_varian[['COD_VARIAN', 'DESC_LINEA']].drop_duplicates()
+    #data_cod_varian =  data_cod_varian[['COD_VARIAN', 'DESC_LINEA']].drop_duplicates()
 
     # Crear un diccionario vacío
     resultados = {}
@@ -102,11 +110,11 @@ def heuristica1():
 
                 print(f"Tiempo de ejecución: {execution_time} segundos")
     # Guardar en un archivo HDF5
-   # Convertir las matrices de NumPy a listas para almacenarlas en JSON
+    # Convertir las matrices de NumPy a listas para almacenarlas en JSON
     resultados_json = {str(key): matriz.tolist() for key, matriz in resultados.items()}
 
     # Guardar en un archivo JSON
-    with open('/home/roberto/Documents/dev/fing/hpc/csv/resultados.json', 'w') as json_file:
+    with open('C:\\Users\\renzo\\Desktop\\hpc\\csv\\resultadosAlgoritmo' + str(numFragmento) + '.json', 'w') as json_file:
         json.dump(resultados_json, json_file)
 
 
@@ -255,4 +263,9 @@ def distanncia_paradas(cod_parada: int, df_x: pd.DataFrame, df_y: pd.DataFrame):
 
     return df_resultado
 
-heuristica1()
+
+num_fragmento = int(sys.argv[1])
+heuristica1(num_fragmento)
+
+#
+#"C:\\Users\\renzo\\Desktop\\hpc\\csv\\resProcessingData\\fragmentosCodVar\\fragmento_1.csv"
