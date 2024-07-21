@@ -5,11 +5,8 @@ import os
 def preprocessing_codvar(num_fragmentos, ruta_csv):
     # Leer el archivo CSV
     df = pd.read_csv(ruta_csv)
-
-    print('entra a la func.')
-
     # Asegurarse de que la carpeta de salida exista
-    carpeta_salida = r'C:\Users\renzo\Desktop\hpc\csv\resProcessingData\fragmentosCodVar'
+    carpeta_salida = f'./csv/resProcessingData/fragmentosCodVar'
     if not os.path.exists(carpeta_salida):
         os.makedirs(carpeta_salida)
 
@@ -39,4 +36,3 @@ num_fragmentos = int(sys.argv[1])
 ruta_csv = sys.argv[2]
 
 preprocessing_codvar(num_fragmentos, ruta_csv)
-#preprocessing_codvar(3, "C:\\Users\\renzo\\Desktop\\hpc\\csv\\resProcessingData\\cod_varian.csv")

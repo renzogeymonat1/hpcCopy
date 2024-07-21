@@ -48,7 +48,6 @@ def clean_date():
     # Renombrar las columnas para que coincidan con el formato deseado
     df_cant_viajes_franja.columns = ['COD_UBIC_P', 'DESC_LINEA', 'COD_VARIAN', 'franja_horaria', 'cant_viajes']
 
-
     # Filtrar las columnas necesarias
     df_viajes = df_viajes_no_null[['fecha_evento', 'cantidad_pasajeros', 'codigo_parada_origen', 'dsc_linea', 'sevar_codigo']]
     df_origen_destino_linea = df_origen_destino_linea_no_null[['COD_LINEA', 'DESC_LINEA', 'COD_VARIAN', 'DESC_VARIA']]
@@ -78,38 +77,14 @@ def clean_date():
     # Ordenar el DataFrame resultante por línea, variante, y hora
     df_paradas_lineas_direc = df_paradas_lineas_direc.sort_values(by=['DESC_LINEA', 'frecuencia', 'hora'])
 
-
     # Creamos dataframe para todas las cod_varian.
     df_cod_varian = df_paradas_lineas_direc[['COD_VARIAN', 'DESC_LINEA']]
     
     #Eliminar duplicados
     df_cod_varian =  df_cod_varian[['COD_VARIAN', 'DESC_LINEA']].drop_duplicates()
 
-
-
-
-    # # Extraer la hora de 'fecha_evento'
-    # df_viajes['hora'] = df_viajes['fecha_evento'].dt.hour
-
-    # # Asignar franjas horarias
-    # df_viajes['franja_horaria'] = df_viajes['hora'].apply(asignar_franja_horaria)
-
-    # # Agrupar por 'codigo_parada_origen', 'dsc_linea', 'sevar_codigo' y 'franja_horaria', luego sumar los pasajeros en cantidad_pasajeros
-    # df_cant_viajes_franja = df_viajes.groupby(['codigo_parada_origen', 'dsc_linea', 'sevar_codigo', 'franja_horaria'])['cantidad_pasajeros'].sum().reset_index()
-    
-    # # Renombrar las columnas para que coincidan con el formato deseado
-    # df_cant_viajes_franja.columns = ['COD_UBIC_P', 'DESC_LINEA', 'COD_VARIAN', 'franja_horaria', 'cant_viajes']
-
-    # return {
-    #     'viajes': df_viajes, 'paradas': df_paradas, 
-    #     #'orden_paradas': df_orden_paradas, 'origen_destino_linea': df_origen_destino_linea,
-    #     'paradas_lineas_direc': df_paradas_lineas_direc[
-    #         ['COD_UBIC_P', 'DESC_LINEA', 'COD_VARIAN', 'X', 'Y', 'DESC_VARIA']
-    #     ]
-    # }
-
     # Definir la ruta de la carpeta donde se guardarán los CSV
-    output_folder = r'C:\Users\renzo\Desktop\hpc\csv\resProcessingData'  # Usar una cadena "raw" para evitar problemas con las barras invertidas
+    output_folder = f'./csv/resProcessingData' 
 
     # Crear la carpeta si no existe
     if not os.path.exists(output_folder):
