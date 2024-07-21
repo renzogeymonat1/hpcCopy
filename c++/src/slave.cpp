@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
     MPI_Init(&argc, &argv);
     int world_rank;
     int world_size;
-    
+
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
@@ -118,7 +118,6 @@ int main(int argc, char* argv[]) {
         std::string data(fragment_size, ' ');
         MPI_Recv(&data[0], fragment_size, MPI_CHAR, 0, 2, MPI_COMM_WORLD, &status);
 
-
         // Crear un thread para manejar al cliente
         std::string json_str;
         std::thread client_thread(handle_client, std::ref(json_str), numSlave, data);
@@ -132,16 +131,13 @@ int main(int argc, char* argv[]) {
 
         // Esperar a que el thread del cliente termine
         client_thread.join();
-
+        MPI_Barrier(MPI_COMM_WORLD);
         // Enviar el JSON al proceso maestro
         int json_size = json_str.size();
-        MPI_Send(&json_size, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
-        std::cout << "pasa por aca " <<  numSlave << std::endl;
-        MPI_Send(json_str.c_str(), json_str.size(), MPI_CHAR, 0, 2, MPI_COMM_WORLD);
-        std::cout << "pasa por aca " <<  numSlave << std::endl;
-
+        MPI_Send(&json_size, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(json_str.c_str(), json_str.size(), MPI_CHAR, 0, 0, MPI_COMM_WORLD);
     }
-
+    
     MPI_Finalize();
     return 0;
 }

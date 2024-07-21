@@ -1,7 +1,5 @@
 import pandas as pd
 import preprocessing_data as pre_data
-from datetime import datetime
-import time
 import numpy as np
 import json
 import sys
@@ -41,11 +39,9 @@ def main(numFragmento):
     except json.JSONDecodeError as e:
         print(f"Error al decodificar JSON: {e}")
 
-
     data_paradas_lineas_direc = pd.DataFrame.from_records(json_data['paradas_lineas_direc'])
     data_cod_varian = pd.DataFrame.from_records(json_data['cod_varian'])
     df_cant_viajes_franja = pd.DataFrame.from_records(json_data['df_cant_viajes_franja'])
-
 
     # Lista de paradas por cordenadas para medir distancias
     #data_paradas_lineas_direc = data['paradas_lineas_direc']
@@ -60,44 +56,37 @@ def main(numFragmento):
     for franja in ['00-10','10-18','18-00']:
         for _, row in data_cod_varian.iterrows():
             k += 1
-            if k <= 1:
-                data_paradas_variante = data_paradas_lineas_direc[data_paradas_lineas_direc['COD_VARIAN'] == row['COD_VARIAN']]
-                data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']]
-                data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']].drop_duplicates()
-                        
-                # Obtener los valores de la columna 'COD_UBIC_P'
-                cod_ubic_p_values = data_paradas_variante['COD_UBIC_P'].values
+            #if k <= 1:
+            data_paradas_variante = data_paradas_lineas_direc[data_paradas_lineas_direc['COD_VARIAN'] == row['COD_VARIAN']]
+            data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']]
+            data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']].drop_duplicates()
+                    
+            # Obtener los valores de la columna 'COD_UBIC_P'
+            cod_ubic_p_values = data_paradas_variante['COD_UBIC_P'].values
 
-                # Crear una matriz nxn, donde n es el número de filas en data_paradas_variante
-                n = len(cod_ubic_p_values)
-                matriz = np.zeros((n, n + 1))
+            # Crear una matriz nxn, donde n es el número de filas en data_paradas_variante
+            n = len(cod_ubic_p_values)
+            matriz = np.zeros((n, n + 1))
 
-                # Asignar los valores de cod_ubic_p_values a la primera columna de la matriz
-                matriz[:, 0] = cod_ubic_p_values
+            # Asignar los valores de cod_ubic_p_values a la primera columna de la matriz
+            matriz[:, 0] = cod_ubic_p_values
 
-                i = 1
-                #start_time = time.time()
-                for cod_ubic_p_acenso in data_paradas_variante['COD_UBIC_P']:
-                    data_probabilidades_iter = iter_de_calculo(
-                            cod_ubic_p_acenso, row['DESC_LINEA'], row['COD_VARIAN'],
-                            franja, df_paradas_x_sorted, df_paradas_y_sorted, 
-                            df_cant_viajes_franja, data_paradas_lineas_direc
-                        )
-                    print(cod_ubic_p_acenso)
-                    prob_values = data_probabilidades_iter['PROBABILIDAD'].values
-                    prob_values = np.pad(prob_values, (n - len(prob_values), 0), 'constant')
-                    matriz[:, i] = prob_values
-                    i += 1
-                np.set_printoptions(suppress=True, precision=8)
-                key = (row['COD_VARIAN'], franja)
-                resultados[key] = matriz
-                # Detener el temporizador
-                #end_time = time.time()
+            i = 1
+            for cod_ubic_p_acenso in data_paradas_variante['COD_UBIC_P']:
+                data_probabilidades_iter = iter_de_calculo(
+                        cod_ubic_p_acenso, row['DESC_LINEA'], row['COD_VARIAN'],
+                        franja, df_paradas_x_sorted, df_paradas_y_sorted, 
+                        df_cant_viajes_franja, data_paradas_lineas_direc
+                    )
+                print(cod_ubic_p_acenso)
+                prob_values = data_probabilidades_iter['PROBABILIDAD'].values
+                prob_values = np.pad(prob_values, (n - len(prob_values), 0), 'constant')
+                matriz[:, i] = prob_values
+                i += 1
+            np.set_printoptions(suppress=True, precision=8)
+            key = (row['COD_VARIAN'], franja)
+            resultados[key] = matriz
 
-                # Calcular el tiempo transcurrido
-                #execution_time = end_time - start_time
-
-                # print(f"Tiempo de ejecución: {execution_time} segundos")
     # Convertir las matrices de NumPy a listas para almacenarlas en JSON
     resultado = {str(key): matriz.tolist() for key, matriz in resultados.items()}
 
@@ -107,8 +96,6 @@ def main(numFragmento):
     # Enviar el JSON
     client_socket.sendall(json_data.encode())
     client_socket.close()
-
-
 
 #funcion para quedarnos con lo necesario cada vez que se toma una row de viajes. Cod parada, línea y variante en la que la persona asciende
 def iter_de_calculo(
@@ -179,8 +166,12 @@ def iter_de_calculo(
                                     how='inner')
 
         # Seleccionar las columnas específicas
-        data_lineas_regreso = data_lineas_regreso.loc[:, ['COD_UBIC_P_CERCANA_ORIGEN', 'DESC_LINEA_CERCANA_ORIGEN',
-                                                  'COD_VARIAN_CERCANA_ORIGEN', 'DESC_VARIA_CERCANA_ORIGEN', 'COD_UBIC_P', 'DESC_LINEA', 'COD_VARIAN', 'DESC_VARIA']]
+        data_lineas_regreso = data_lineas_regreso.loc[:, 
+            [
+                'COD_UBIC_P_CERCANA_ORIGEN', 'DESC_LINEA_CERCANA_ORIGEN',
+                'COD_VARIAN_CERCANA_ORIGEN', 'DESC_VARIA_CERCANA_ORIGEN', 
+                'COD_UBIC_P', 'DESC_LINEA', 'COD_VARIAN', 'DESC_VARIA'
+            ]]
         
         # Filtrar los registros donde DESC_VARIA sea distinto de sentidoViaje
         data_lineas_regreso = data_lineas_regreso[data_lineas_regreso['DESC_VARIA'] != sentidoViaje]
