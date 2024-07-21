@@ -10,16 +10,42 @@ import socket
 paradas_cercanas = {}
 
 def main(numFragmento):
-    # Leer el archivo CSV
-   
-    #VIAJES = './csv/resProcessingData/viajes.csv'
-    PARADAS_LINEAS_DIREC = './csv/resProcessingData/paradas_lineas_direc.csv'
-    CANT_VIAJES_FRANJA= './csv/resProcessingData/df_cant_viajes_franja.csv'
-    
-    #Obtener los datos 
-    #df_viajes = pd.read_csv(VIAJES)
-    data_paradas_lineas_direc = pd.read_csv(PARADAS_LINEAS_DIREC)
-    df_cant_viajes_franja = pd.read_csv( CANT_VIAJES_FRANJA)
+    connected = False
+
+    try:
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect(('localhost', 6500 + numFragmento))
+        connected = True
+        print("Conectado al servidor.")
+    except ConnectionRefusedError:
+        print(f"Conexión rechazada, intento.")
+        
+    if not connected:
+        print("No se pudo conectar al servidor.")
+        exit()
+
+    # Recibir datos JSON desde el servidor
+    received_data = b""
+    end_flag = b"END_OF_DATA"
+    while True:
+        data = client_socket.recv(1024)
+        if end_flag in data:
+            received_data += data[:data.find(end_flag)]
+            break
+        received_data += data
+
+    try:
+        json_data = json.loads(received_data.decode())
+        print("Datos JSON recibidos:")
+        #print(json.dumps(json_data, indent=4))
+    except json.JSONDecodeError as e:
+        print(f"Error al decodificar JSON: {e}")
+
+
+    data_paradas_lineas_direc = pd.DataFrame.from_records(json_data['paradas_lineas_direc'])
+    data_cod_varian = pd.DataFrame.from_records(json_data['cod_varian'])
+    df_cant_viajes_franja = pd.DataFrame.from_records(json_data['df_cant_viajes_franja'])
+
 
     # Lista de paradas por cordenadas para medir distancias
     #data_paradas_lineas_direc = data['paradas_lineas_direc']
@@ -28,47 +54,13 @@ def main(numFragmento):
     df_paradas_x_sorted = df_paradas_x.sort_values(by='X')
     df_paradas_y_sorted = df_paradas_y.sort_values(by='Y')
     
-    # # Convertir la columna 'fecha_evento' a datetime
-    # df_viajes['fecha_evento'] = pd.to_datetime(df_viajes['fecha_evento'])
-
-    # # Crear una función para asignar franjas horarias
-    # def asignar_franja_horaria(hora):
-    #     if 0 <= hora < 10:
-    #         return '00-10'
-    #     elif 10 <= hora < 18:
-    #         return '10-18'
-    #     else:
-    #         return '18-00'
-        
-    # print("viajes cargados")
-
-    # # Extraer la hora de 'fecha_evento'
-    # df_viajes['hora'] = df_viajes['fecha_evento'].dt.hour
-
-    # # Asignar franjas horarias
-    # df_viajes['franja_horaria'] = df_viajes['hora'].apply(asignar_franja_horaria)
-
-    # # Agrupar por 'codigo_parada_origen', 'dsc_linea', 'sevar_codigo' y 'franja_horaria', luego sumar los pasajeros en cantidad_pasajeros
-    # df_cant_viajes_franja = df_viajes.groupby(['codigo_parada_origen', 'dsc_linea', 'sevar_codigo', 'franja_horaria'])['cantidad_pasajeros'].sum().reset_index()
-    
-    # # Renombrar las columnas para que coincidan con el formato deseado
-    # df_cant_viajes_franja.columns = ['COD_UBIC_P', 'DESC_LINEA', 'COD_VARIAN', 'franja_horaria', 'cant_viajes']
-    # print("viajes procesados")
-
-    # Seleccionar solo la columna COD_VARIAN
-    ruta = f'./csv/resProcessingData/fragmentosCodVar/fragmento_{numFragmento}.csv'
-    data_cod_varian = pd.read_csv(ruta)
-    
-    #Eliminar duplicados
-    #data_cod_varian =  data_cod_varian[['COD_VARIAN', 'DESC_LINEA']].drop_duplicates()
-
     # Crear un diccionario vacío
     resultados = {}
     k = 0
     for franja in ['00-10','10-18','18-00']:
         for _, row in data_cod_varian.iterrows():
-            if k < 1:
-                k += 1
+            k += 1
+            if k <= 1:
                 data_paradas_variante = data_paradas_lineas_direc[data_paradas_lineas_direc['COD_VARIAN'] == row['COD_VARIAN']]
                 data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']]
                 data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']].drop_duplicates()
@@ -84,63 +76,43 @@ def main(numFragmento):
                 matriz[:, 0] = cod_ubic_p_values
 
                 i = 1
-                start_time = time.time()
+                #start_time = time.time()
                 for cod_ubic_p_acenso in data_paradas_variante['COD_UBIC_P']:
                     data_probabilidades_iter = iter_de_calculo(
                             cod_ubic_p_acenso, row['DESC_LINEA'], row['COD_VARIAN'],
                             franja, df_paradas_x_sorted, df_paradas_y_sorted, 
                             df_cant_viajes_franja, data_paradas_lineas_direc
                         )
+                    print(cod_ubic_p_acenso)
                     prob_values = data_probabilidades_iter['PROBABILIDAD'].values
                     prob_values = np.pad(prob_values, (n - len(prob_values), 0), 'constant')
-                    #print(prob_values)
                     matriz[:, i] = prob_values
                     i += 1
                 np.set_printoptions(suppress=True, precision=8)
-                # print(matriz)
                 key = (row['COD_VARIAN'], franja)
                 resultados[key] = matriz
                 # Detener el temporizador
-                end_time = time.time()
+                #end_time = time.time()
 
                 # Calcular el tiempo transcurrido
-                execution_time = end_time - start_time
+                #execution_time = end_time - start_time
 
                 # print(f"Tiempo de ejecución: {execution_time} segundos")
-    # Guardar en un archivo HDF5
     # Convertir las matrices de NumPy a listas para almacenarlas en JSON
     resultado = {str(key): matriz.tolist() for key, matriz in resultados.items()}
-
-    # Guardar en un archivo JSON
-    # with open('./csv/resultadosAlgoritmo' + str(numFragmento) + '.json', 'w') as json_file:
-    #     json.dump(resultados_json, json_file)
 
    # Convertir el diccionario a una cadena JSON
     json_data = json.dumps(resultado)
 
-    # Intentar conectar al servidor varias veces antes de fallar
-    connected = False
-    try:
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(('localhost', 6500 + numFragmento))
-        connected = True
-        
-    except ConnectionRefusedError:
-        print(f"Conexión rechazada, intento.")
-
-    if not connected:
-        print("No se pudo conectar al servidor después de varios intentos.")
-        return
-
     # Enviar el JSON
     client_socket.sendall(json_data.encode())
     client_socket.close()
-    # return resultados_json
+
 
 
 #funcion para quedarnos con lo necesario cada vez que se toma una row de viajes. Cod parada, línea y variante en la que la persona asciende
 def iter_de_calculo(
-        cod_parada: int, desc_linea: str, cod_var: int, franja_iter: datetime, 
+        cod_parada: int, desc_linea: str, cod_var: int, franja_iter: str, 
         df_paradas_x_sorted: pd.DataFrame, df_paradas_y_sorted: pd.DataFrame,
         df_cant_viajes_franja: pd.DataFrame, data_paradas_lineas_direc: pd.DataFrame
         ):
@@ -167,7 +139,7 @@ def iter_de_calculo(
         sentidoViaje = data_paradas_lineas_direc_iter.iloc[0]['DESC_VARIA']
 
     # print(data_paradas_lineas_direc_iter)
-    data_paradas_lineas_direc_iter = data_paradas_lineas_direc_iter.drop_duplicates()
+    data_paradas_lineas_direc_iter = data_paradas_lineas_direc_iter.drop_duplicates(subset=['COD_UBIC_P'])
 
     #Agrego columnas VOLUMEN y PROBABILIDAD para luego hacer los calculos.
     data_paradas_lineas_direc_iter = data_paradas_lineas_direc_iter.assign(VOLUMEN=0)
@@ -286,4 +258,4 @@ def distanncia_paradas(cod_parada: int, df_x: pd.DataFrame, df_y: pd.DataFrame):
 if __name__ == "__main__":
     num_fragmento = int(sys.argv[1])
     result = main(num_fragmento)
-    print(json.dumps(result)) 
+    #print(json.dumps(result)) 

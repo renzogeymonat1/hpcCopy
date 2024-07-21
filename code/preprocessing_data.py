@@ -1,8 +1,8 @@
 import pandas as pd
 import cargar_datos as carga
 import os
-from datetime import datetime
-import time
+import json
+import socket
 
 def clean_date():
     # Cargar datos
@@ -83,28 +83,23 @@ def clean_date():
     #Eliminar duplicados
     df_cod_varian =  df_cod_varian[['COD_VARIAN', 'DESC_LINEA']].drop_duplicates()
 
-    # Definir la ruta de la carpeta donde se guardarán los CSV
-    output_folder = f'./csv/resProcessingData' 
-
-    # Crear la carpeta si no existe
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-
-    # Guardar cada DataFrame en un archivo CSV
-    df_viajes.to_csv(os.path.join(output_folder, 'viajes.csv'), index=False)
-    df_paradas.to_csv(os.path.join(output_folder, 'paradas.csv'), index=False)
-    df_paradas_lineas_direc[
-        ['COD_UBIC_P', 'DESC_LINEA', 'COD_VARIAN', 'X', 'Y', 'DESC_VARIA']
-    ].to_csv(os.path.join(output_folder, 'paradas_lineas_direc.csv'), index=False)
-    df_cod_varian.to_csv(os.path.join(output_folder, 'cod_varian.csv'), index=False)
-    df_cant_viajes_franja.to_csv(os.path.join(output_folder, 'df_cant_viajes_franja.csv'), index=False)
-
     return {
-        'viajes': os.path.join(output_folder, 'viajes.csv'), 
-        'paradas': os.path.join(output_folder, 'paradas.csv'), 
-        'paradas_lineas_direc': os.path.join(output_folder, 'paradas_lineas_direc.csv'),
-        'cod_varian': os.path.join(output_folder, 'cod_varian.csv'),
-        'df_cant_viajes_franja': os.path.join(output_folder, 'df_cant_viajes_franja.csv')
+        'paradas': df_paradas.to_dict(orient='records'),
+        'paradas_lineas_direc': df_paradas_lineas_direc.to_dict(orient='records'),
+        'cod_varian': df_cod_varian.to_dict(orient='records'),
+        'df_cant_viajes_franja': df_cant_viajes_franja.to_dict(orient='records')
     }
 
-clean_date()
+def send_data(data, port):
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect(('localhost', port))
+
+    json_data = json.dumps(data)
+    client_socket.sendall(json_data.encode())
+
+    client_socket.close()
+
+if __name__ == "__main__":
+    port = 65432
+    data = clean_date()
+    send_data(data, port)
