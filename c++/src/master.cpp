@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <thread>
 #include <array>
+#include <omp.h>
 #include <unistd.h>
 #include <vector>
 #include <nlohmann/json.hpp>
@@ -105,6 +106,11 @@ int main(int argc, char* argv[]) {
         // Medir el tiempo de inicio
         double start_time = MPI_Wtime();
 
+        // Aquí se configura el número de threads para OpenMP
+        int num_threads = num_fragments;  // o algún otro valor que desees
+        omp_set_num_threads(num_threads);
+
+        #pragma omp parallel for
         for (int i = 1; i <= num_fragments; ++i) {
             nlohmann::json fragment;
             fragment["paradas"] = data_result["paradas"];
