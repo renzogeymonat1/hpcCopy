@@ -56,7 +56,7 @@ def main(numFragmento):
     for franja in ['00-10','10-18','18-00']:
         for _, row in data_cod_varian.iterrows():
             k += 1
-            if k <= 1:
+            if k <= 3:
                 data_paradas_variante = data_paradas_lineas_direc[data_paradas_lineas_direc['COD_VARIAN'] == row['COD_VARIAN']]
                 data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']]
                 data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']].drop_duplicates()
@@ -187,14 +187,50 @@ def iter_de_calculo(
             if cod_ubic_p not in origen_paradas_cercanas_list:
                 desc_linea = row['DESC_LINEA']
                 cod_varian = row['COD_VARIAN']
-                row_cant_viajes = df_cant_viajes_franja[
-                    (df_cant_viajes_franja['COD_UBIC_P'] == cod_ubic_p) &
-                    (df_cant_viajes_franja['DESC_LINEA'] == desc_linea) &
-                    (df_cant_viajes_franja['COD_VARIAN'] == cod_varian) &
-                    (df_cant_viajes_franja['franja_horaria'] == franja_iter)
-                ]
-                acc_volumen += row_cant_viajes['cant_viajes'].sum()
+                if franja_iter == '00-10':
+                    # Cálculo específico para la franja '00-10'
+                    row_cant_viajes = df_cant_viajes_franja[
+                        (df_cant_viajes_franja['COD_UBIC_P'] == cod_ubic_p) &
+                        (df_cant_viajes_franja['DESC_LINEA'] == desc_linea) &
+                        (df_cant_viajes_franja['COD_VARIAN'] == cod_varian) &
+                        (df_cant_viajes_franja['franja_horaria'] == '10-18')
+                    ]
+                    acc_volumen += row_cant_viajes['cant_viajes'].sum()
+                    
+                    row_cant_viajes2 = df_cant_viajes_franja[
+                        (df_cant_viajes_franja['COD_UBIC_P'] == cod_ubic_p) &
+                        (df_cant_viajes_franja['DESC_LINEA'] == desc_linea) &
+                        (df_cant_viajes_franja['COD_VARIAN'] == cod_varian) &
+                        (df_cant_viajes_franja['franja_horaria'] == '18-00')
+                    ]
+                    acc_volumen += row_cant_viajes2['cant_viajes'].sum()
 
+                elif franja_iter == '10-18':
+                    # Cálculo específico para la franja '10-18'
+                    row_cant_viajes = df_cant_viajes_franja[
+                        (df_cant_viajes_franja['COD_UBIC_P'] == cod_ubic_p) &
+                        (df_cant_viajes_franja['DESC_LINEA'] == desc_linea) &
+                        (df_cant_viajes_franja['COD_VARIAN'] == cod_varian) 
+                    ]
+                    acc_volumen += row_cant_viajes['cant_viajes'].sum()
+
+                elif franja_iter == '18-00':
+                    # Cálculo específico para la franja '18-00'
+                    row_cant_viajes = df_cant_viajes_franja[
+                        (df_cant_viajes_franja['COD_UBIC_P'] == cod_ubic_p) &
+                        (df_cant_viajes_franja['DESC_LINEA'] == desc_linea) &
+                        (df_cant_viajes_franja['COD_VARIAN'] == cod_varian) &
+                        (df_cant_viajes_franja['franja_horaria'] == '00-10')
+                    ]
+                    acc_volumen += row_cant_viajes['cant_viajes'].sum()
+
+                    row_cant_viajes2 = df_cant_viajes_franja[
+                        (df_cant_viajes_franja['COD_UBIC_P'] == cod_ubic_p) &
+                        (df_cant_viajes_franja['DESC_LINEA'] == desc_linea) &
+                        (df_cant_viajes_franja['COD_VARIAN'] == cod_varian) &
+                        (df_cant_viajes_franja['franja_horaria'] == '10-18')
+                    ]
+                    acc_volumen += row_cant_viajes2['cant_viajes'].sum()
         # Actualizar el valor de la columna 'VOLUMEN' para la fila que cumple la condición
         data_paradas_lineas_direc_iter.loc[
         data_paradas_lineas_direc_iter['COD_UBIC_P'] == cod_parada_siguiente, 'VOLUMEN'

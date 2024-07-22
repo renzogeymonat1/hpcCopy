@@ -9,6 +9,7 @@
 #include <array>
 #include <omp.h>
 #include <unistd.h>
+#include <fstream>
 #include <vector>
 #include <nlohmann/json.hpp>
 
@@ -148,13 +149,22 @@ int main(int argc, char* argv[]) {
         double elapsed_time = end_time - start_time;
         std::cout << "Tiempo total de ejecución: " << elapsed_time << " segundos." << std::endl;
 
-        // Mostrar resultados
-        std::cout << "Resultados recibidos de los esclavos:" << std::endl;
-        // for (int i = 0; i < num_fragments; ++i) {
-        //     std::cout << "Esclavo " << i + 1 << ": " << result_data[i] << std::endl;
-        // }
-    }
+        // Crear un objeto JSON para unir todos los resultados
+        nlohmann::json final_result =  nlohmann::json::array();
 
+        for (int i = 0; i < num_fragments; ++i) {
+            final_result.push_back( nlohmann::json::parse(result_data[i]));
+        }
+
+        // Guardar el objeto JSON en un archivo
+        std::ofstream out_file("resultados.json");
+        out_file << final_result.dump(4); // Formateado con indentación de 4 espacios
+        out_file.close();
+
+        std::cout << "Resultados guardados en 'resultados.json'." << std::endl;
+
+    }
+    
     MPI_Finalize();
     return 0;
 }
