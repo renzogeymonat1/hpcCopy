@@ -1,9 +1,9 @@
 import pandas as pd
-import preprocessing_data as pre_data
 import numpy as np
 import json
 import sys
 import socket
+from tqdm import tqdm
 
 paradas_cercanas = {}
 
@@ -44,7 +44,6 @@ def main(numFragmento):
     df_cant_viajes_franja = pd.DataFrame.from_records(json_data['df_cant_viajes_franja'])
 
     # Lista de paradas por cordenadas para medir distancias
-    #data_paradas_lineas_direc = data['paradas_lineas_direc']
     df_paradas_x = data_paradas_lineas_direc[['COD_UBIC_P', 'X']].drop_duplicates()
     df_paradas_y = data_paradas_lineas_direc[['COD_UBIC_P', 'Y']].drop_duplicates()
     df_paradas_x_sorted = df_paradas_x.sort_values(by='X')
@@ -53,14 +52,13 @@ def main(numFragmento):
     # Crear un diccionario vacío
     resultados = {}
     k = 0
-    for franja in ['00-10','10-18','18-00']:
-        for _, row in data_cod_varian.iterrows():
-            # k += 1
-            # if k <= 3:
+    
+    for franja in tqdm(['00-10', '10-18', '18-00'], desc="Procesando franjas"):
+        for _, row in tqdm(data_cod_varian.iterrows(), total=len(data_cod_varian), desc=f"Procesando cod_varian {franja} {numFragmento}"):
             data_paradas_variante = data_paradas_lineas_direc[data_paradas_lineas_direc['COD_VARIAN'] == row['COD_VARIAN']]
-            data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']]
-            data_paradas_variante =  data_paradas_variante[['COD_UBIC_P']].drop_duplicates()
-                    
+            data_paradas_variante = data_paradas_variante[['COD_UBIC_P']]
+            data_paradas_variante = data_paradas_variante[['COD_UBIC_P']].drop_duplicates()
+            
             # Obtener los valores de la columna 'COD_UBIC_P'
             cod_ubic_p_values = data_paradas_variante['COD_UBIC_P'].values
 
@@ -72,13 +70,12 @@ def main(numFragmento):
             matriz[:, 0] = cod_ubic_p_values
 
             i = 1
-            for cod_ubic_p_acenso in data_paradas_variante['COD_UBIC_P']:
+            for cod_ubic_p_acenso in tqdm(data_paradas_variante['COD_UBIC_P'], desc=f"Procesando cod_ubic_p {numFragmento}"):
                 data_probabilidades_iter = iter_de_calculo(
                         cod_ubic_p_acenso, row['DESC_LINEA'], row['COD_VARIAN'],
                         franja, df_paradas_x_sorted, df_paradas_y_sorted, 
                         df_cant_viajes_franja, data_paradas_lineas_direc
                     )
-                print(cod_ubic_p_acenso)
                 prob_values = data_probabilidades_iter['PROBABILIDAD'].values
                 prob_values = np.pad(prob_values, (n - len(prob_values), 0), 'constant')
                 matriz[:, i] = prob_values
@@ -86,7 +83,6 @@ def main(numFragmento):
             np.set_printoptions(suppress=True, precision=8)
             key = (row['COD_VARIAN'], franja)
             resultados[key] = matriz
-
     # Convertir las matrices de NumPy a listas para almacenarlas en JSON
     resultado = {str(key): matriz.tolist() for key, matriz in resultados.items()}
 

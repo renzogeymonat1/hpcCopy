@@ -99,6 +99,8 @@ int main(int argc, char* argv[]) {
             MPI_Finalize();
             return 1;
         }
+        
+        std::cout << "Script de Python (preprocessing_data.py) ejecutado con éxito." << std::endl;
 
         int num_fragments = std::stoi(argv[1]);
         client_thread.join();
@@ -114,7 +116,6 @@ int main(int argc, char* argv[]) {
         #pragma omp parallel for
         for (int i = 1; i <= num_fragments; ++i) {
             nlohmann::json fragment;
-            fragment["paradas"] = data_result["paradas"];
             fragment["paradas_lineas_direc"] = data_result["paradas_lineas_direc"];
             fragment["cod_varian"] = cod_varian_fragments[i - 1];
             fragment["df_cant_viajes_franja"] = data_result["df_cant_viajes_franja"];
@@ -127,7 +128,6 @@ int main(int argc, char* argv[]) {
             MPI_Send(fragment_str.c_str(), fragment_size, MPI_CHAR, i, 2, MPI_COMM_WORLD);
         }
 
-        std::cout << "Script de Python (preprocessing_data.py) ejecutado con éxito." << std::endl;
 
         MPI_Barrier(MPI_COMM_WORLD);
 

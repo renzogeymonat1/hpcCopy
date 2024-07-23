@@ -84,7 +84,6 @@ def clean_date():
     df_cod_varian =  df_cod_varian[['COD_VARIAN', 'DESC_LINEA']].drop_duplicates()
 
     return {
-        'paradas': df_paradas.to_dict(orient='records'),
         'paradas_lineas_direc': df_paradas_lineas_direc.to_dict(orient='records'),
         'cod_varian': df_cod_varian.to_dict(orient='records'),
         'df_cant_viajes_franja': df_cant_viajes_franja.to_dict(orient='records')
