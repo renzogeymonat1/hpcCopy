@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     // Imprimir el valor de world_rank
-    std::cout << "Soy el master con rank " << world_rank << " de " << world_size << " procesos." << std::endl;
+    std::cout << "Soy el master con rank " << rank << " de " << numProcs << " procesos." << std::endl;
 
     if (rank == 0) {
         if (argc != 2) {
