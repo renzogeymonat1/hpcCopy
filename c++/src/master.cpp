@@ -83,6 +83,9 @@ int main(int argc, char* argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    // Imprimir el valor de world_rank
+    std::cout << "Soy el master con rank " << world_rank << " de " << world_size << " procesos." << std::endl;
+
     if (rank == 0) {
         if (argc != 2) {
             std::cerr << "Uso: " << argv[0] << " <numSlaves>" << std::endl;

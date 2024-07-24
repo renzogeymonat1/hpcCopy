@@ -106,6 +106,9 @@ int main(int argc, char* argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
+    // Imprimir el valor de world_rank
+    std::cout << "Soy el proceso con rank " << world_rank << " de " << world_size << " procesos." << std::endl;
+
     if (world_rank != 0) {
         int numSlave;
         MPI_Status status;
