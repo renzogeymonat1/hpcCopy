@@ -55,36 +55,36 @@ def main(numFragmento):
     
     for franja in tqdm(['00-10', '10-18', '18-00'], desc="Procesando franjas"):
         for _, row in tqdm(data_cod_varian.iterrows(), total=len(data_cod_varian), desc=f"Procesando cod_varian {franja} {numFragmento}"):
-            k += 1
-            if (k<=1):
-                data_paradas_variante = data_paradas_lineas_direc[data_paradas_lineas_direc['COD_VARIAN'] == row['COD_VARIAN']]
-                data_paradas_variante = data_paradas_variante[['COD_UBIC_P']]
-                data_paradas_variante = data_paradas_variante[['COD_UBIC_P']].drop_duplicates()
-                
-                # Obtener los valores de la columna 'COD_UBIC_P'
-                cod_ubic_p_values = data_paradas_variante['COD_UBIC_P'].values
+            #k += 1
+            #if (k<=1):
+            data_paradas_variante = data_paradas_lineas_direc[data_paradas_lineas_direc['COD_VARIAN'] == row['COD_VARIAN']]
+            data_paradas_variante = data_paradas_variante[['COD_UBIC_P']]
+            data_paradas_variante = data_paradas_variante[['COD_UBIC_P']].drop_duplicates()
+            
+            # Obtener los valores de la columna 'COD_UBIC_P'
+            cod_ubic_p_values = data_paradas_variante['COD_UBIC_P'].values
 
-                # Crear una matriz nxn, donde n es el número de filas en data_paradas_variante
-                n = len(cod_ubic_p_values)
-                matriz = np.zeros((n, n + 1))
+            # Crear una matriz nxn, donde n es el número de filas en data_paradas_variante
+            n = len(cod_ubic_p_values)
+            matriz = np.zeros((n, n + 1))
 
-                # Asignar los valores de cod_ubic_p_values a la primera columna de la matriz
-                matriz[:, 0] = cod_ubic_p_values
+            # Asignar los valores de cod_ubic_p_values a la primera columna de la matriz
+            matriz[:, 0] = cod_ubic_p_values
 
-                i = 1
-                for cod_ubic_p_acenso in tqdm(data_paradas_variante['COD_UBIC_P'], desc=f"Procesando cod_ubic_p {numFragmento}"):
-                    data_probabilidades_iter = iter_de_calculo(
-                            cod_ubic_p_acenso, row['DESC_LINEA'], row['COD_VARIAN'],
-                            franja, df_paradas_x_sorted, df_paradas_y_sorted, 
-                            df_cant_viajes_franja, data_paradas_lineas_direc
-                        )
-                    prob_values = data_probabilidades_iter['PROBABILIDAD'].values
-                    prob_values = np.pad(prob_values, (n - len(prob_values), 0), 'constant')
-                    matriz[:, i] = prob_values
-                    i += 1
-                np.set_printoptions(suppress=True, precision=8)
-                key = (row['COD_VARIAN'], franja)
-                resultados[key] = matriz
+            i = 1
+            for cod_ubic_p_acenso in tqdm(data_paradas_variante['COD_UBIC_P'], desc=f"Procesando cod_ubic_p {numFragmento}"):
+                data_probabilidades_iter = iter_de_calculo(
+                        cod_ubic_p_acenso, row['DESC_LINEA'], row['COD_VARIAN'],
+                        franja, df_paradas_x_sorted, df_paradas_y_sorted, 
+                        df_cant_viajes_franja, data_paradas_lineas_direc
+                    )
+                prob_values = data_probabilidades_iter['PROBABILIDAD'].values
+                prob_values = np.pad(prob_values, (n - len(prob_values), 0), 'constant')
+                matriz[:, i] = prob_values
+                i += 1
+            np.set_printoptions(suppress=True, precision=8)
+            key = (row['COD_VARIAN'], franja)
+            resultados[key] = matriz
     # Convertir las matrices de NumPy a listas para almacenarlas en JSON
     resultado = {str(key): matriz.tolist() for key, matriz in resultados.items()}
 
