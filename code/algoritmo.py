@@ -54,9 +54,9 @@ def main(numFragmento):
     k = 0
     
     for franja in tqdm(['00-10', '10-18', '18-00'], desc="Procesando franjas"):
-        k += 1
         for _, row in tqdm(data_cod_varian.iterrows(), total=len(data_cod_varian), desc=f"Procesando cod_varian {franja} {numFragmento}"):
-            if (k<1):
+            k += 1
+            if (k<=1):
                 data_paradas_variante = data_paradas_lineas_direc[data_paradas_lineas_direc['COD_VARIAN'] == row['COD_VARIAN']]
                 data_paradas_variante = data_paradas_variante[['COD_UBIC_P']]
                 data_paradas_variante = data_paradas_variante[['COD_UBIC_P']].drop_duplicates()
