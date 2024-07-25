@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
         client_thread.join();
         auto data_result = nlohmann::json::parse(preprocessing_data);
         std::vector<nlohmann::json> cod_varian_fragments = split_dataframe(data_result["cod_varian"], num_fragments);
-        print_json_vector(cod_varian_fragments);
+        //print_json_vector(cod_varian_fragments);
         // Medir el tiempo de inicio
         double start_time = MPI_Wtime();
 
