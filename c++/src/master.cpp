@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <vector>
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 
 // Función para recibir datos a través de un socket
 void receive_data(std::string& json_str, int port) {

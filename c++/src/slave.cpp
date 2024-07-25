@@ -2,7 +2,7 @@
 #include <string>
 #include <stdexcept>
 #include <array>
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 #include <thread>
 #include <mpi.h>
 #include <sys/socket.h>
