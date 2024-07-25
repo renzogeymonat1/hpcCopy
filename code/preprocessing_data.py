@@ -79,9 +79,22 @@ def clean_date():
 
     # Creamos dataframe para todas las cod_varian.
     df_cod_varian = df_paradas_lineas_direc[['COD_VARIAN', 'DESC_LINEA']]
+
+    #valores_cod_varian = [546, 300, 330, 103, 105, 174]
+    #df_cod_varian = df_cod_varian[df_cod_varian['COD_VARIAN'].isin(valores_cod_varian)]
     
     #Eliminar duplicados
     df_cod_varian =  df_cod_varian[['COD_VARIAN', 'DESC_LINEA']].drop_duplicates()
+    
+
+    # Lista de las líneas que deseas filtrar
+    lineas_a_filtrar = ['546', '300', '330', '103', '105', '174']
+
+    # Filtrar el DataFrame para que contenga solo las líneas deseadas
+    df_cod_varian = df_cod_varian[df_cod_varian['DESC_LINEA'].isin(lineas_a_filtrar)]
+
+    # Mostrar el DataFrame resultante
+    print(df_cod_varian)
 
     return {
         'paradas_lineas_direc': df_paradas_lineas_direc.to_dict(orient='records'),
